@@ -2,9 +2,9 @@ package postgres
 
 import "time"
 
-//�-�� ����������� ��������� �� �������� Postgres � �� ������� ����
 type Option func(*Postgres)
 
+// возвращают анонимную функцию, которая принимает указатель на `Postgres` и изменяет соответствующие поля
 func MaxPoolSize(size int) Option {
 	return func(p *Postgres) {
 		p.maxPoolSize = size

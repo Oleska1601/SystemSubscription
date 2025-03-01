@@ -2,6 +2,7 @@ package main
 
 import (
 	"SystemSubscription/config"
+	_ "SystemSubscription/docs"
 	"SystemSubscription/internal/controller"
 	"SystemSubscription/internal/database/repo"
 	"SystemSubscription/internal/usecase"
@@ -10,6 +11,13 @@ import (
 	"log/slog"
 )
 
+// @title System Of Subscriptions API
+// @version 1.0
+// @description API for Golang Project System of Subscriptions
+// @termsOfService http://swagger.io/terms/
+
+// @host localhost:8080
+// @BasePath /
 func main() {
 	cfg, err := config.New()
 	if err != nil {

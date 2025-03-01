@@ -1,25 +1,23 @@
 package controller
 
 import (
-	"SystemSubscription/internal/usecase"
-	"SystemSubscription/pkg/logger"
-	"context"
 	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/golang-jwt/jwt"
 	"github.com/gorilla/mux"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type Server struct {
 	router    *mux.Router
-	u         *usecase.Usecase
-	logger    *logger.Logger
+	u         UseCaseInterface
+	logger    LoggerInterface
 	secretKey []byte
 }
 
-func New(u *usecase.Usecase, l *logger.Logger) *Server {
+func New(u UseCaseInterface, l LoggerInterface) *Server {
 	s := &Server{
 		router: mux.NewRouter(),
 		u:      u,
@@ -32,7 +30,7 @@ func New(u *usecase.Usecase, l *logger.Logger) *Server {
 	apiRouter := s.router.PathPrefix("/api").Subrouter()
 	apiRouter.Use(s.checkToken)
 	s.AddAPIRouters(apiRouter)
-	//swagger
+	s.router.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 	return s
 }
 
@@ -52,7 +50,7 @@ func (s *Server) checkToken(next http.Handler) http.Handler {
 			s.logger.Error("controller-httpserver checkToken", slog.String("msg", "not authorised"), slog.Int("status", http.StatusUnauthorized))
 			return
 		}
-		claims := Claims{}
+		claims := &Claims{}
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) { return s.secretKey, nil })
 		if err != nil || !token.Valid {
 			http.Error(w, "invalid token", http.StatusUnauthorized)
@@ -65,6 +63,6 @@ func (s *Server) checkToken(next http.Handler) http.Handler {
 			s.logger.Error("controller-httpserver checkToken", slog.String("msg", "token has been expired"), slog.Int("status", http.StatusForbidden))
 			return
 		}
-		next.ServeHTTP(w, r.WithContext(context.WithValue(context.Background(), "user_id", claims.userID)))
+		next.ServeHTTP(w, r)
 	})
 }

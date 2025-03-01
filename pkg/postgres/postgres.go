@@ -35,7 +35,7 @@ func New(logger *logger.Logger, url string, options ...Option) (*Postgres, error
 		opt(pg)
 	}
 	pg.Builder = squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
-	//������� ������������ ��� ���� ����������
+	//создает конфигурацию для пула соединений - парсит url и создает pgxpool.COnfig
 	poolConfig, err := pgxpool.ParseConfig(url)
 	if err != nil {
 		return nil, fmt.Errorf("postgres - New - pgxpool.ParseConfig: %w", err)

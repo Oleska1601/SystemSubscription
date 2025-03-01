@@ -16,6 +16,17 @@ func (s *Server) InfoHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("info"))
 }
 
+// RegisterHandler
+// @Summary register page
+// @Description register by login and password
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param user body entity.Credentials true "Login, Password"
+// @Success 201 {string} string "register successful"
+// @Failure 400 {string} string "register is impossible"
+// @Failure 500 {string} string "error with register or incorrect login or password"
+// @Router /register [post]
 func (s *Server) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	var user entity.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
@@ -31,11 +42,18 @@ func (s *Server) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
-	s.logger.Info("controller-handlers RegisterHandler", slog.String("msg", "register successful"), slog.String("user", user.Login), slog.Int("status", http.StatusCreated))
-	json.NewEncoder(w).Encode(user.Secret)
+	s.logger.Info("controller-handlers RegisterHandler", slog.String("user", user.Login), slog.Int("status", http.StatusCreated))
 }
 
-// login + password
+// LoginHandler
+// @Summary login page
+// @Description login by login and password
+// @Tags users
+// @Param user body entity.Credentials true "Login, Password"
+// @Success 200 {string} string "login successful"
+// @Failure 400 {string} string "login is impossible"
+// @Failure 500 {string} string "error with login or incorrect login or password or login is impossible"
+// @Router /login [post]
 func (s *Server) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	var user entity.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
@@ -60,6 +78,5 @@ func (s *Server) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("token", token)
 	w.WriteHeader(http.StatusOK)
-	s.logger.Info("controller-handlers LoginHandler", slog.String("msg", "login successful"), slog.String("user", user.Login), slog.Int("status", http.StatusOK))
-	json.NewEncoder(w).Encode(loginUser.Secret)
+	s.logger.Info("controller-handlers LoginHandler", slog.String("user", user.Login), slog.Int("status", http.StatusOK))
 }
