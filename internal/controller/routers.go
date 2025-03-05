@@ -8,8 +8,8 @@ import (
 
 func (s *Server) AddAPIRouters(apiRouter *mux.Router) {
 	apiRouter.HandleFunc("/subscription-types", s.APIGetSubscriptionTypesHandler).Methods(http.MethodGet)
-	apiRouter.HandleFunc("/choose-subscription/{user_id}", s.APIChooseSubscriptionHandler).Methods(http.MethodPost)
+	apiRouter.HandleFunc("/set-new-subscription", s.APISetNewSubscriptionHandler).Methods(http.MethodPost)
 	apiRouter.HandleFunc("/activate-subscription", s.APIActivateSubscriptionHandler).Methods(http.MethodPost)
-	apiRouter.HandleFunc("/last-subscription/{user_id}", s.APIGetLastSubscriptionHandler).Methods(http.MethodGet)
-	apiRouter.HandleFunc("/news/{user_id}", s.APIGetNewsHandler).Methods(http.MethodGet)
+	apiRouter.HandleFunc("/last-subscription-info", s.APIGetLastSubscriptionInfoHandler).Methods(http.MethodGet)
+	apiRouter.HandleFunc("/news", s.APIGetNewsHandler).Methods(http.MethodGet)
 }

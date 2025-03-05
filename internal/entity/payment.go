@@ -9,6 +9,6 @@ type Payment struct {
 	Amount               int64     `json:"amount" example:"10"`
 	StartTime            time.Time `json:"start_time" example:"2006-01-02T15:04:05Z"`
 	EntTime              time.Time `json:"end_time" example:"2006-01-02T15:04:15Z"`
-	Status               string    `json:"status" example:"token is generated"` //token is generated/ paid/ cancel
+	PaymentStatusID      int64     `json:"payment_status_id" example:"1"`
 	UserID               int64     `json:"user_id" example:"1"`
 }

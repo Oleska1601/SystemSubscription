@@ -61,13 +61,13 @@
                         }
                     },
                     "403": {
-                        "description": "token has been expired or payment token has been expired",
+                        "description": "token has been expired",
                         "schema": {
                             "type": "string"
                         }
                     },
                     "500": {
-                        "description": "error of getting payment or error of updating payment or error of adding subscription",
+                        "description": "error of activating subscription",
                         "schema": {
                             "type": "string"
                         }
@@ -75,81 +75,9 @@
                 }
             }
         },
-        "/api/choose-subscription/{user_id}": {
-            "post": {
-                "description": "choose subscriptionType and get paymentToken if last subscription is not active",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "subscription"
-                ],
-                "summary": "post page",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "jwt token for authentification",
-                        "name": "token",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "UserID",
-                        "name": "user_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": " ID, TypeName, Duration, Price",
-                        "name": "subscription_type",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/entity.SubscriptionType"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "paymentToken",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "choose subscription is impossible",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "401": {
-                        "description": "not authorised or invalid token",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "403": {
-                        "description": "token has been expired or current subscription is active",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "error of getting last subscription or error of adding payment",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/last-subscription/{user_id}": {
+        "/api/last-subscription-info": {
             "get": {
-                "description": "get last subscription",
+                "description": "get last subscription info",
                 "consumes": [
                     "application/json"
                 ],
@@ -167,24 +95,17 @@
                         "name": "token",
                         "in": "header",
                         "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "UserID",
-                        "name": "user_id",
-                        "in": "path",
-                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entity.Subscription"
+                            "$ref": "#/definitions/entity.SubscriptionInfo"
                         }
                     },
                     "400": {
-                        "description": "get last subscription is impossible",
+                        "description": "get last subscription info is impossible",
                         "schema": {
                             "type": "string"
                         }
@@ -202,7 +123,7 @@
                         }
                     },
                     "500": {
-                        "description": "error of getting last subscription",
+                        "description": "error of getting last subscription info",
                         "schema": {
                             "type": "string"
                         }
@@ -210,7 +131,7 @@
                 }
             }
         },
-        "/api/news/{user_id}": {
+        "/api/news": {
             "get": {
                 "description": "get news if last subscription is active",
                 "consumes": [
@@ -229,13 +150,6 @@
                         "description": "jwt token for authentification",
                         "name": "token",
                         "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "UserID",
-                        "name": "user_id",
-                        "in": "path",
                         "required": true
                     }
                 ],
@@ -265,7 +179,72 @@
                         }
                     },
                     "500": {
-                        "description": "error of getting last subscription",
+                        "description": "error of getting news",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/set-new-subscription": {
+            "post": {
+                "description": "choose subscriptionType and get paymentToken if last subscription is not active",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subscription"
+                ],
+                "summary": "post page",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "jwt token for authentification",
+                        "name": "token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": " ID, TypeName, Duration, Price",
+                        "name": "subscription_type",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entity.SubscriptionType"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "paymentToken",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "set new subscription is impossible",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "not authorised or invalid token",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "token has been expired",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "error of setting new subscription",
                         "schema": {
                             "type": "string"
                         }
@@ -444,7 +423,7 @@
                 }
             }
         },
-        "entity.Subscription": {
+        "entity.SubscriptionInfo": {
             "type": "object",
             "properties": {
                 "end_date": {
@@ -455,22 +434,18 @@
                     "type": "string",
                     "example": "2006-01-02T15:04:05Z"
                 },
-                "status": {
-                    "description": "active or not active",
-                    "type": "string",
-                    "example": "active"
-                },
                 "subscription_id": {
                     "type": "integer",
                     "example": 1
                 },
-                "subscription_type_id": {
+                "subscription_status": {
+                    "description": "1-active, 0-not active",
                     "type": "integer",
                     "example": 1
                 },
-                "user_id": {
-                    "type": "integer",
-                    "example": 1
+                "subscription_type_name:": {
+                    "type": "string",
+                    "example": "1 second"
                 }
             }
         },

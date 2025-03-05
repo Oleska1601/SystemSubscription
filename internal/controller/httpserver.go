@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 	"time"
@@ -19,9 +20,10 @@ type Server struct {
 
 func New(u UseCaseInterface, l LoggerInterface) *Server {
 	s := &Server{
-		router: mux.NewRouter(),
-		u:      u,
-		logger: l,
+		router:    mux.NewRouter(),
+		u:         u,
+		logger:    l,
+		secretKey: []byte("secret-key"),
 	}
 	s.router.HandleFunc("/home", s.HomeHandler)
 	s.router.HandleFunc("/info", s.InfoHandler)
@@ -47,22 +49,22 @@ func (s *Server) checkToken(next http.Handler) http.Handler {
 		tokenString := r.Header.Get("token")
 		if tokenString == "" {
 			http.Error(w, "not authorised", http.StatusUnauthorized)
-			s.logger.Error("controller-httpserver checkToken", slog.String("msg", "not authorised"), slog.Int("status", http.StatusUnauthorized))
+			s.logger.Error("controller checkToken", slog.String("msg", "not authorised"), slog.Int("status", http.StatusUnauthorized))
 			return
 		}
 		claims := &Claims{}
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) { return s.secretKey, nil })
 		if err != nil || !token.Valid {
 			http.Error(w, "invalid token", http.StatusUnauthorized)
-			s.logger.Error("controller-httpserver checkToken jwt.ParseWithClaims", slog.Any("error", err), slog.Int("status", http.StatusUnauthorized))
+			s.logger.Error("controller checkToken jwt.ParseWithClaims", slog.Any("error", err), slog.Int("status", http.StatusUnauthorized))
 			return
 		}
 		now := time.Now().Unix()
 		if now > claims.ExpiresAt {
 			http.Error(w, "token has been expired", http.StatusForbidden)
-			s.logger.Error("controller-httpserver checkToken", slog.String("msg", "token has been expired"), slog.Int("status", http.StatusForbidden))
+			s.logger.Error("controller checkToken", slog.String("msg", "token has been expired"), slog.Int("status", http.StatusForbidden))
 			return
 		}
-		next.ServeHTTP(w, r)
+		next.ServeHTTP(w, r.WithContext(context.WithValue(context.Background(), "user_id", claims.UserID)))
 	})
 }

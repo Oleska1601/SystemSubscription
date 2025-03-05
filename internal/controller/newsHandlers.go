@@ -1,17 +1,14 @@
 package controller
 
 import (
-	"SystemSubscription/internal/entity"
 	"encoding/json"
 	"log/slog"
 	"net/http"
-	"strconv"
-
-	"github.com/gorilla/mux"
 )
 
 // 5
-// Проверяет наличие активной подписки у пользователя. Если подписка активна, возвращает текст «новость». Если нет, сообщает о её отсутствии.
+// Проверяет наличие активной подписки у пользователя.
+// Если подписка активна, возвращает текст «новость». Если нет, сообщает о её отсутствии.
 
 // APIGetNewsHandler
 // @Summary get page
@@ -20,34 +17,28 @@ import (
 // @Accept json
 // @Produce json
 // @Param token header string true "jwt token for authentification"
-// @Param user_id path int true "UserID"
 // @Success 200 {object} entity.News
 // @Failure 400 {string} string "get news is impossible"
 // @Failure 401 {string} string "not authorised or invalid token"
 // @Failure 403 {string} string "token has been expired or current subscription is not active"
-// @Failure 500 {string} string "error of getting last subscription"
-// @Router /api/news/{user_id} [get]
+// @Failure 500 {string} string "error of getting news"
+// @Router /api/news [get]
 func (s *Server) APIGetNewsHandler(w http.ResponseWriter, r *http.Request) {
-	userIDString := mux.Vars(r)["user_id"]
-	userID, err := strconv.ParseInt(userIDString, 10, 64)
-	if err != nil {
+	userID := r.Context().Value("user_id").(int64)
+	if userID == 0 {
 		http.Error(w, "get news is impossible", http.StatusBadRequest)
-		s.logger.Error("controller-handlersAPI APIGetNewsHandler strconv.Atoi", slog.Any("error", err), slog.Int("status", http.StatusBadRequest))
+		s.logger.Error("controller APIGetNewsHandler",
+			slog.String("msg", "no user_id in r.Context().Value"), slog.Int("status", http.StatusBadRequest))
 		return
 	}
-	lastSubscription, err := s.u.GetLastSubscription(userID)
+	news, err := s.u.GetNews(userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		s.logger.Error("controller-handlersAPI APIGetNewsHandler s.u.GetLastSubscription", slog.Any("error", err), slog.Int("status", http.StatusInternalServerError))
-		return
-	}
-	if !s.u.IsSubscriptionStatusActive(lastSubscription) {
-		http.Error(w, "current subscription is not active", http.StatusForbidden)
-		s.logger.Error("controller-handlersAPI APIGetNewsHandler", slog.Int("status", http.StatusForbidden))
+		s.logger.Error("controller APIGetNewsHandler s.u.GetNews",
+			slog.Any("error", err), slog.Int("status", http.StatusInternalServerError))
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	s.logger.Info("controller-handlersAPI APIGetNewsHandler", slog.Int("status", http.StatusOK))
-	news := entity.News{Message: "news"}
+	s.logger.Info("controller APIGetNewsHandler", slog.Int("status", http.StatusOK))
 	json.NewEncoder(w).Encode(news)
 }

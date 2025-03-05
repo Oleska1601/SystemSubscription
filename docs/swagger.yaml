@@ -20,7 +20,7 @@ definitions:
       token:
         type: string
     type: object
-  entity.Subscription:
+  entity.SubscriptionInfo:
     properties:
       end_date:
         example: "2006-01-02T15:04:06Z"
@@ -28,19 +28,16 @@ definitions:
       start_date:
         example: "2006-01-02T15:04:05Z"
         type: string
-      status:
-        description: active or not active
-        example: active
-        type: string
       subscription_id:
         example: 1
         type: integer
-      subscription_type_id:
+      subscription_status:
+        description: 1-active, 0-not active
         example: 1
         type: integer
-      user_id:
-        example: 1
-        type: integer
+      'subscription_type_name:':
+        example: 1 second
+        type: string
     type: object
   entity.SubscriptionType:
     properties:
@@ -99,91 +96,36 @@ paths:
           schema:
             type: string
         "403":
-          description: token has been expired or payment token has been expired
+          description: token has been expired
           schema:
             type: string
         "500":
-          description: error of getting payment or error of updating payment or error
-            of adding subscription
+          description: error of activating subscription
           schema:
             type: string
       summary: post page
       tags:
       - subscription
-  /api/choose-subscription/{user_id}:
-    post:
-      consumes:
-      - application/json
-      description: choose subscriptionType and get paymentToken if last subscription
-        is not active
-      parameters:
-      - description: jwt token for authentification
-        in: header
-        name: token
-        required: true
-        type: string
-      - description: UserID
-        in: path
-        name: user_id
-        required: true
-        type: integer
-      - description: ' ID, TypeName, Duration, Price'
-        in: body
-        name: subscription_type
-        required: true
-        schema:
-          $ref: '#/definitions/entity.SubscriptionType'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: paymentToken
-          schema:
-            type: string
-        "400":
-          description: choose subscription is impossible
-          schema:
-            type: string
-        "401":
-          description: not authorised or invalid token
-          schema:
-            type: string
-        "403":
-          description: token has been expired or current subscription is active
-          schema:
-            type: string
-        "500":
-          description: error of getting last subscription or error of adding payment
-          schema:
-            type: string
-      summary: post page
-      tags:
-      - subscription
-  /api/last-subscription/{user_id}:
+  /api/last-subscription-info:
     get:
       consumes:
       - application/json
-      description: get last subscription
+      description: get last subscription info
       parameters:
       - description: jwt token for authentification
         in: header
         name: token
         required: true
         type: string
-      - description: UserID
-        in: path
-        name: user_id
-        required: true
-        type: integer
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/entity.Subscription'
+            $ref: '#/definitions/entity.SubscriptionInfo'
         "400":
-          description: get last subscription is impossible
+          description: get last subscription info is impossible
           schema:
             type: string
         "401":
@@ -195,13 +137,13 @@ paths:
           schema:
             type: string
         "500":
-          description: error of getting last subscription
+          description: error of getting last subscription info
           schema:
             type: string
       summary: get page
       tags:
       - subscription
-  /api/news/{user_id}:
+  /api/news:
     get:
       consumes:
       - application/json
@@ -212,11 +154,6 @@ paths:
         name: token
         required: true
         type: string
-      - description: UserID
-        in: path
-        name: user_id
-        required: true
-        type: integer
       produces:
       - application/json
       responses:
@@ -237,12 +174,56 @@ paths:
           schema:
             type: string
         "500":
-          description: error of getting last subscription
+          description: error of getting news
           schema:
             type: string
       summary: get page
       tags:
       - news
+  /api/set-new-subscription:
+    post:
+      consumes:
+      - application/json
+      description: choose subscriptionType and get paymentToken if last subscription
+        is not active
+      parameters:
+      - description: jwt token for authentification
+        in: header
+        name: token
+        required: true
+        type: string
+      - description: ' ID, TypeName, Duration, Price'
+        in: body
+        name: subscription_type
+        required: true
+        schema:
+          $ref: '#/definitions/entity.SubscriptionType'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: paymentToken
+          schema:
+            type: string
+        "400":
+          description: set new subscription is impossible
+          schema:
+            type: string
+        "401":
+          description: not authorised or invalid token
+          schema:
+            type: string
+        "403":
+          description: token has been expired
+          schema:
+            type: string
+        "500":
+          description: error of setting new subscription
+          schema:
+            type: string
+      summary: post page
+      tags:
+      - subscription
   /api/subscription-types:
     get:
       consumes:

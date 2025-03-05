@@ -25,11 +25,11 @@ func (s *Server) APIGetSubscriptionTypesHandler(w http.ResponseWriter, r *http.R
 	subscriptionTypes, err := s.u.GetSubscriptionTypes()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		s.logger.Error("controller-handlersAPI APIGetSubscriptionTypesHandler s.u.GetSubscriptionTypes",
+		s.logger.Error("controller APIGetSubscriptionTypesHandler s.u.GetSubscriptionTypes",
 			slog.Any("error", err), slog.Int("status", http.StatusInternalServerError))
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	s.logger.Info("controller-handlersAPI APIGetSubscriptionTypesHandler", slog.Int("status", http.StatusOK))
+	s.logger.Info("controller APIGetSubscriptionTypesHandler", slog.Int("status", http.StatusOK))
 	json.NewEncoder(w).Encode(subscriptionTypes)
 }

@@ -38,5 +38,8 @@ func main() {
 	l.Info("connected to db")
 	u := usecase.New(pgRepo, l)
 	s := controller.New(u, l)
+	//go u.UpdatePayments()
+	//go u.UpdateSubscriptions()
 	s.Run(cfg.HTTP.Port)
+
 }

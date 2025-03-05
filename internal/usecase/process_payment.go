@@ -3,17 +3,27 @@ package usecase
 import (
 	"SystemSubscription/internal/entity"
 	"context"
-	"errors"
-	"log/slog"
+	"crypto/rand"
+	"encoding/base64"
+	"fmt"
 	"time"
 )
+
+func (u *Usecase) GeneratePaymentToken() string {
+	paymentTokenBytes := make([]byte, 64)
+	rand.Read(paymentTokenBytes)
+	return base64.StdEncoding.EncodeToString(paymentTokenBytes)
+}
+
+func (u *Usecase) IsPaymentActive(payment entity.Payment) bool {
+	return payment.EntTime.After(time.Now())
+}
 
 func (u *Usecase) GetPayment(paymentToken string) (entity.Payment, error) {
 	ctx, _ := context.WithCancel(context.Background())
 	payment, err := u.pgRepo.GetPayment(ctx, paymentToken)
 	if err != nil {
-		u.logger.Error("usecase-usecaseAPI ActivateSubscription u.pgRepo.GetPayment", slog.Any("error", err))
-		return entity.Payment{}, errors.New("error of getting payment")
+		return entity.Payment{}, fmt.Errorf("u.pgRepo.GetPayment %w", err)
 	}
 	return payment, nil
 }
@@ -24,34 +34,29 @@ func (u *Usecase) AddPayment(subscriptionType *entity.SubscriptionType, userID i
 	endTime := startTime.Add(time.Second * 100)
 	//startTimeFormat := startTime.Format("2006-01-02T15:04:05Z")
 	//endTimeFormat = endTime.Format("2006-01-02T15:04:05Z")
-	paymentToken := GeneratePaymentToken()
+	paymentToken := u.GeneratePaymentToken()
 	payment := entity.Payment{
 		Token:                paymentToken,
 		SubscriptionTypeName: subscriptionType.TypeName,
 		Amount:               subscriptionType.Price,
 		StartTime:            startTime,
 		EntTime:              endTime,
-		Status:               "token is generated",
-		UserID:               userID,
+		// p.s по хорошему здесь делаем запрос в бд и получаем payment_status_id где payment_status=in process
+		PaymentStatusID: 2,
+		UserID:          userID,
 	}
 	err := u.pgRepo.InsertPayment(ctx, &payment)
 	if err != nil {
-		u.logger.Error("usecase-usecaseAPI AddPayment u.pgRepo.InsertPayment", slog.Any("error", err))
-		return "", errors.New("error of adding payment")
+		return "", fmt.Errorf("u.pgRepo.InsertPayment %w", err)
 	}
 	return paymentToken, nil
 }
 
-func (u *Usecase) UpdatePayment(paymentID int64, newPaymentStatus string) error {
+func (u *Usecase) UpdatePayment(paymentID int64, newPaymentStatusID int) error {
 	ctx, _ := context.WithCancel(context.Background())
-	err := u.pgRepo.UpdatePayment(ctx, paymentID, newPaymentStatus)
+	err := u.pgRepo.UpdatePayment(ctx, paymentID, newPaymentStatusID)
 	if err != nil {
-		u.logger.Error("usecase-usecaseAPI UpdatePayment u.pgRepo.UpdatePayment", slog.Any("error", err))
-		return errors.New("error of updating payment")
+		return fmt.Errorf("u.pgRepo.UpdatePayment %w", err)
 	}
 	return nil
-}
-
-func (u *Usecase) IsPaymentActive(payment entity.Payment) bool {
-	return payment.EntTime.After(time.Now())
 }
